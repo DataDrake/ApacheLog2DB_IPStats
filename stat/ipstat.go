@@ -6,6 +6,8 @@ import (
 	"github.com/DataDrake/ApacheLog2DB/source"
 	"github.com/DataDrake/ipstat/data"
 	"github.com/DataDrake/ipstat/lms"
+	"fmt"
+	"os"
 )
 
 type IPStat struct {
@@ -20,16 +22,23 @@ func NewIPStat(bw float64, lat float64, sourceid int) *IPStat {
 }
 
 func GetStats(s *source.Source) (*IPStat, error) {
-	samples, err := data.CollectDataPoints(s.IP, 100, 1500, 100)
-	if err != nil {
-		return nil, err
-	}
 	stat := &IPStat{}
-	slope, intercept := lms.LMS_Perf(samples)
-	stat.Bandwidth = float64(1.0) / slope
-	stat.Latency = intercept
-	stat.SourceID = s.ID
-	return stat, nil
+	for i := 0; i < 5; i++ {
+		samples, err := data.CollectDataPoints(s.IP, 100, 1500, 100)
+		if err != nil {
+			fmt.Fprintln(os.Stderr,err.Error())
+		} else {
+
+			slope, intercept := lms.LMS_Perf(samples)
+			if slope > 0 {
+				stat.Bandwidth = float64(1.0) / slope
+				stat.Latency = intercept
+				stat.SourceID = s.ID
+				return stat,nil
+			}
+		}
+	}
+	return stat, errors.New("Failed to get stats for: " + s.IP)
 }
 
 func ReadOrCreate(db *sql.DB, s *source.Source) (*IPStat, error) {
