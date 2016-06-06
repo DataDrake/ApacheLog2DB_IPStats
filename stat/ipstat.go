@@ -10,6 +10,8 @@ import (
 	"os"
 )
 
+var MAX_RETRIES = 3;
+
 type IPStat struct {
 	ID        int
 	Bandwidth float64
@@ -23,7 +25,7 @@ func NewIPStat(bw float64, lat float64, sourceid int) *IPStat {
 
 func GetStats(s *source.Source) (*IPStat, error) {
 	stat := &IPStat{}
-	for i := 0; i < 5; i++ {
+	for i := 0; i < MAX_RETRIES; i++ {
 		samples, err := data.CollectDataPoints(s.IP, 100, 1500, 100)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err.Error())
