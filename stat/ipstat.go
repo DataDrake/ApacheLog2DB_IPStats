@@ -3,10 +3,10 @@ package stat
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 	"github.com/DataDrake/ApacheLog2DB/source"
 	"github.com/DataDrake/ipstat/data"
 	"github.com/DataDrake/ipstat/lms"
-	"fmt"
 	"os"
 )
 
@@ -26,7 +26,7 @@ func GetStats(s *source.Source) (*IPStat, error) {
 	for i := 0; i < 5; i++ {
 		samples, err := data.CollectDataPoints(s.IP, 100, 1500, 100)
 		if err != nil {
-			fmt.Fprintln(os.Stderr,err.Error())
+			fmt.Fprintln(os.Stderr, err.Error())
 		} else {
 
 			slope, intercept := lms.LMS_Perf(samples)
@@ -34,7 +34,7 @@ func GetStats(s *source.Source) (*IPStat, error) {
 				stat.Bandwidth = float64(1.0) / slope
 				stat.Latency = intercept
 				stat.SourceID = s.ID
-				return stat,nil
+				return stat, nil
 			}
 		}
 	}
@@ -58,13 +58,13 @@ func ReadOrCreate(db *sql.DB, s *source.Source) (*IPStat, error) {
 
 func CreateTable(d *sql.DB) error {
 	_, err := d.Exec("CREATE TABLE ipstats ( id INTEGER PRIMARY KEY AUTOINCREMENT," +
-		"bandwidth DOUBLE, latency DOUBLE, sourceid INTEGER," +
-		"FOREIGN KEY(sourceid) REFERENCES sources(id)")
+		"bandwidth REAL, latency REAL, sourceid INTEGER," +
+		"FOREIGN KEY(sourceid) REFERENCES sources(id) )")
 	return err
 }
 
 func Insert(d *sql.DB, s *IPStat) error {
-	_, err := d.Exec("INSERT INTO ipstats VALUES( NULL , ? , ? , ? , ? )", s.Bandwidth, s.Latency, s.SourceID)
+	_, err := d.Exec("INSERT INTO ipstats VALUES( NULL , ? , ? , ? )", s.Bandwidth, s.Latency, s.SourceID)
 	return err
 }
 
@@ -94,7 +94,7 @@ func Read(d *sql.DB, id int) (*IPStat, error) {
 
 func ReadAll(d *sql.DB) ([]*IPStat, error) {
 	ss := make([]*IPStat, 0)
-	rows, err := d.Query("SELECT * FROM user_agents")
+	rows, err := d.Query("SELECT * FROM ipstats")
 	if err == nil {
 		for rows.Next() {
 			s := &IPStat{}

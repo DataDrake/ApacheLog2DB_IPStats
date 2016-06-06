@@ -22,6 +22,5 @@ func UpdateStats(db *sql.DB) error {
 }
 
 func GetAllStats(db *sql.DB) error {
-
 	return errors.New("Feature not yet supported")
 }
