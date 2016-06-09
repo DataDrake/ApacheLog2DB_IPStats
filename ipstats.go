@@ -7,11 +7,20 @@ import (
 	"github.com/DataDrake/ApacheLog2DB_IPStats/stat"
 	_ "github.com/go-sql-driver/mysql"
 	"os"
+	"strings"
 )
 
 func usage() {
 	fmt.Println("USAGE: ipstats [OPTION]... DB_STRING")
 	flag.PrintDefaults()
+}
+
+func dbconnection(conn string) (*sql.DB, error) {
+	if strings.HasPrefix(conn, "mysql://") {
+		conn = strings.Replace(conn, "mysql://", "", 1)
+		return sql.Open("mysql", conn)
+	}
+	return sql.Open("sqlite3", conn)
 }
 
 func main() {
@@ -31,7 +40,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	db, err := sql.Open("mysql", args[0])
+	db, err := dbconnection(args[0])
 	defer db.Close()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, err.Error())
