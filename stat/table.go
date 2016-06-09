@@ -15,7 +15,7 @@ func SliceContains(vs []string, v string) bool {
 
 func get_tables(db *sql.DB) ([]string, error) {
 	tables := make([]string, 0)
-	found, err := db.Query("SELECT name FROM sqlite_master WHERE type='table'")
+	found, err := db.Query("SHOW TABLES")
 	if err != nil {
 		return nil, err
 	}
