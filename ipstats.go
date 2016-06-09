@@ -5,12 +5,12 @@ import (
 	"flag"
 	"fmt"
 	"github.com/DataDrake/ApacheLog2DB_IPStats/stat"
-	_ "github.com/mattn/go-sqlite3"
+	_ "github.com/go-sql-driver/mysql"
 	"os"
 )
 
 func usage() {
-	fmt.Println("USAGE: ipstats [OPTION]... DB_FILE")
+	fmt.Println("USAGE: ipstats [OPTION]... DB_STRING")
 	flag.PrintDefaults()
 }
 
@@ -31,7 +31,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	db, err := sql.Open("sqlite3", args[0])
+	db, err := sql.Open("mysql", args[0])
 	defer db.Close()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, err.Error())

@@ -59,8 +59,8 @@ func ReadOrCreate(db *sql.DB, s *source.Source) (*IPStat, error) {
 }
 
 func CreateTable(d *sql.DB) error {
-	_, err := d.Exec("CREATE TABLE ipstats ( id INTEGER PRIMARY KEY AUTOINCREMENT," +
-		"bandwidth REAL, latency REAL, sourceid INTEGER," +
+	_, err := d.Exec("CREATE TABLE ipstats ( id INTEGER PRIMARY KEY AUTO_INCREMENT," +
+		"bandwidth DOUBLE, latency DOUBLE, sourceid INTEGER," +
 		"FOREIGN KEY(sourceid) REFERENCES sources(id) )")
 	return err
 }
