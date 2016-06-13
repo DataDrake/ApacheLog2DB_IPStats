@@ -76,6 +76,9 @@ func GetAverages(db *sql.DB) (map[string]float64, map[string]float64, error) {
 		avgs[s] /= counts[s]
 		avgs2[s] /= counts[s]
 	}
+	avgs["all"] /= counts["all"]
+	avgs2["all"] /= counts["all"]
+
 	return avgs, avgs2, nil
 }
 
