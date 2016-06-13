@@ -10,7 +10,7 @@ import (
 	"os"
 )
 
-var MAX_RETRIES = 3;
+var MAX_RETRIES = 3
 
 type IPStat struct {
 	ID        int

@@ -26,6 +26,7 @@ func dbconnection(conn string) (*sql.DB, error) {
 func main() {
 	flag.Usage = func() { usage() }
 	update := flag.Bool("u", false, "Update existing IPStats")
+	fib := flag.Bool("b", false, "Fill missing IPStats with averages")
 	flag.Parse()
 
 	args := flag.Args()
@@ -54,6 +55,8 @@ func main() {
 
 	if *update {
 		err = stat.UpdateStats(db)
+	} else if *fib {
+		err = stat.FillInBlanks(db)
 	} else {
 		err = stat.GetAllStats(db)
 	}
