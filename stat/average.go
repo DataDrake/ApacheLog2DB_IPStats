@@ -13,7 +13,7 @@ func FindClosest(IP string, avgs, avgs2 map[string]float64) (float64, float64) {
 	bw := avgs["all"]
 	lat := avgs2["all"]
 	for i := range octets {
-		str := strings.Join(octets[1:i], ".")
+		str := strings.Join(octets[0:i], ".")
 		if avgs[str] != 0.0 {
 			bw = avgs[str]
 			lat = avgs2[str]
@@ -49,7 +49,7 @@ func UpdateTotals(IP string, s *IPStat, avgs, avgs2, cts map[string]float64) {
 	avgs2["all"] += s.Latency
 	cts["all"] += 1.0
 	for i := range octets {
-		str := strings.Join(octets[1:i], ".")
+		str := strings.Join(octets[0:i], ".")
 		avgs[str] += s.Bandwidth
 		avgs2[str] += s.Latency
 		cts[str] += 1.0
