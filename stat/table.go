@@ -2,6 +2,8 @@ package stat
 
 import (
 	"database/sql"
+	"github.com/DataDrake/ApacheLog2DB/core"
+	"github.com/DataDrake/ApacheLog2DB/global"
 )
 
 func SliceContains(vs []string, v string) bool {
@@ -15,7 +17,7 @@ func SliceContains(vs []string, v string) bool {
 
 func get_tables(db *sql.DB) ([]string, error) {
 	tables := make([]string, 0)
-	found, err := db.Query("SHOW TABLES")
+	found, err := db.Query(core.GET_TABLES[global.DB_TYPE])
 	if err != nil {
 		return nil, err
 	}
