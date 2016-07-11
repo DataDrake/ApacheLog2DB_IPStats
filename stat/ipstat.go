@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"github.com/DataDrake/ApacheLog2DB/global"
 	"github.com/DataDrake/ApacheLog2DB/source"
 	"github.com/DataDrake/ipstat/data"
 	"github.com/DataDrake/ipstat/lms"
@@ -58,10 +59,17 @@ func ReadOrCreate(db *sql.DB, s *source.Source) (*IPStat, error) {
 	return stat, err
 }
 
+var CREATE_TABLE = map[string]string{
+	"mysql": `CREATE TABLE ipstats ( id INTEGER PRIMARY KEY AUTO_INCREMENT
+	bandwidth DOUBLE, latency DOUBLE, sourceid INTEGER,
+	FOREIGN KEY(sourceid) REFERENCES sources(id) )`,
+	"sqlite": `CREATE TABLE ipstats ( id INTEGER PRIMARY KEY AUTOINCREMENT
+	bandwidth DOUBLE, latency DOUBLE, sourceid INTEGER,
+	FOREIGN KEY(sourceid) REFERENCES sources(id) )`,
+}
+
 func CreateTable(d *sql.DB) error {
-	_, err := d.Exec("CREATE TABLE ipstats ( id INTEGER PRIMARY KEY AUTO_INCREMENT," +
-		"bandwidth DOUBLE, latency DOUBLE, sourceid INTEGER," +
-		"FOREIGN KEY(sourceid) REFERENCES sources(id) )")
+	_, err := d.Exec(CREATE_TABLE[global.DB_TYPE])
 	return err
 }
 
