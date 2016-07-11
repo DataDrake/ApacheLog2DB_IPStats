@@ -60,10 +60,10 @@ func ReadOrCreate(db *sql.DB, s *source.Source) (*IPStat, error) {
 }
 
 var CREATE_TABLE = map[string]string{
-	"mysql": `CREATE TABLE ipstats ( id INTEGER PRIMARY KEY AUTO_INCREMENT
+	"mysql": `CREATE TABLE ipstats ( id INTEGER PRIMARY KEY AUTO_INCREMENT,
 	bandwidth DOUBLE, latency DOUBLE, sourceid INTEGER,
 	FOREIGN KEY(sourceid) REFERENCES sources(id) )`,
-	"sqlite": `CREATE TABLE ipstats ( id INTEGER PRIMARY KEY AUTOINCREMENT
+	"sqlite": `CREATE TABLE ipstats ( id INTEGER PRIMARY KEY AUTOINCREMENT,
 	bandwidth DOUBLE, latency DOUBLE, sourceid INTEGER,
 	FOREIGN KEY(sourceid) REFERENCES sources(id) )`,
 }
