@@ -1,9 +1,9 @@
 package stat
 
 import (
-	"database/sql"
 	"fmt"
 	"github.com/DataDrake/ApacheLog2DB/source"
+    "github.com/jmoiron/sqlx"
 	"os"
 	"strings"
 )
@@ -22,7 +22,7 @@ func FindClosest(IP string, avgs, avgs2 map[string]float64) (float64, float64) {
 	return bw, lat
 }
 
-func FillBlanks(db *sql.DB, avgs, avgs2 map[string]float64) error {
+func FillBlanks(db *sqlx.DB, avgs, avgs2 map[string]float64) error {
 	srcs, err := source.ReadAll(db)
 	if err != nil {
 		return err
@@ -56,7 +56,7 @@ func UpdateTotals(IP string, s *IPStat, avgs, avgs2, cts map[string]float64) {
 	}
 }
 
-func GetAverages(db *sql.DB) (map[string]float64, map[string]float64, error) {
+func GetAverages(db *sqlx.DB) (map[string]float64, map[string]float64, error) {
 	stats, err := ReadAll(db)
 	if err != nil {
 		return nil, nil, err
@@ -82,7 +82,7 @@ func GetAverages(db *sql.DB) (map[string]float64, map[string]float64, error) {
 	return avgs, avgs2, nil
 }
 
-func FillInBlanks(db *sql.DB) error {
+func FillInBlanks(db *sqlx.DB) error {
 	avgs, avgs2, err := GetAverages(db)
 	if err != nil {
 		return err

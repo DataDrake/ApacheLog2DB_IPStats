@@ -1,9 +1,9 @@
 package stat
 
 import (
-	"database/sql"
 	"github.com/DataDrake/ApacheLog2DB/core"
 	"github.com/DataDrake/ApacheLog2DB/global"
+    "github.com/jmoiron/sqlx"
 )
 
 func SliceContains(vs []string, v string) bool {
@@ -15,7 +15,7 @@ func SliceContains(vs []string, v string) bool {
 	return false
 }
 
-func get_tables(db *sql.DB) ([]string, error) {
+func get_tables(db *sqlx.DB) ([]string, error) {
 	tables := make([]string, 0)
 	found, err := db.Query(core.GET_TABLES[global.DB_TYPE])
 	if err != nil {
@@ -36,7 +36,7 @@ func get_tables(db *sql.DB) ([]string, error) {
 	return tables, err
 }
 
-func CreateMissing(db *sql.DB) error {
+func CreateMissing(db *sqlx.DB) error {
 	tables, err := get_tables(db)
 
 	if !SliceContains(tables, "ipstats") {

@@ -1,17 +1,17 @@
 package stat
 
 import (
-	"database/sql"
 	"errors"
 	"fmt"
 	"github.com/DataDrake/ApacheLog2DB/source"
+    "github.com/jmoiron/sqlx"
 	"os"
 	"sync"
 )
 
 var MAX_WORKERS = 10
 
-func UpdateStats(db *sql.DB) error {
+func UpdateStats(db *sqlx.DB) error {
 	c := make(chan *source.Source)
 	wg := &sync.WaitGroup{}
 	ss, err := source.ReadAll(db)
@@ -28,7 +28,7 @@ func UpdateStats(db *sql.DB) error {
 	return nil
 }
 
-func GetStat(wg *sync.WaitGroup, db *sql.DB, c chan *source.Source) {
+func GetStat(wg *sync.WaitGroup, db *sqlx.DB, c chan *source.Source) {
 	wg.Add(1)
 	for s := range c {
 		_, err := ReadOrCreate(db, s)
@@ -39,6 +39,6 @@ func GetStat(wg *sync.WaitGroup, db *sql.DB, c chan *source.Source) {
 	wg.Done()
 }
 
-func GetAllStats(db *sql.DB) error {
+func GetAllStats(db *sqlx.DB) error {
 	return errors.New("Feature not yet supported")
 }

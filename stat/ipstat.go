@@ -1,13 +1,13 @@
 package stat
 
 import (
-	"database/sql"
 	"errors"
 	"fmt"
 	"github.com/DataDrake/ApacheLog2DB/global"
 	"github.com/DataDrake/ApacheLog2DB/source"
 	"github.com/DataDrake/ipstat/data"
 	"github.com/DataDrake/ipstat/lms"
+    "github.com/jmoiron/sqlx"
 	"os"
 )
 
@@ -44,7 +44,7 @@ func GetStats(s *source.Source) (*IPStat, error) {
 	return stat, errors.New("Failed to get stats for: " + s.IP)
 }
 
-func ReadOrCreate(db *sql.DB, s *source.Source) (*IPStat, error) {
+func ReadOrCreate(db *sqlx.DB, s *source.Source) (*IPStat, error) {
 	stat, err := ReadSource(db, s.ID)
 	if err != nil {
 		stat, err = GetStats(s)
@@ -68,17 +68,17 @@ var CREATE_TABLE = map[string]string{
 	FOREIGN KEY(sourceid) REFERENCES sources(id) )`,
 }
 
-func CreateTable(d *sql.DB) error {
+func CreateTable(d *sqlx.DB) error {
 	_, err := d.Exec(CREATE_TABLE[global.DB_TYPE])
 	return err
 }
 
-func Insert(d *sql.DB, s *IPStat) error {
+func Insert(d *sqlx.DB, s *IPStat) error {
 	_, err := d.Exec("INSERT INTO ipstats VALUES( NULL , ? , ? , ? )", s.Bandwidth, s.Latency, s.SourceID)
 	return err
 }
 
-func ReadSource(d *sql.DB, sourceid int) (*IPStat, error) {
+func ReadSource(d *sqlx.DB, sourceid int) (*IPStat, error) {
 	s := &IPStat{}
 	var err error
 	row := d.QueryRow("SELECT * FROM ipstats WHERE sourceid=?", sourceid)
@@ -90,7 +90,7 @@ func ReadSource(d *sql.DB, sourceid int) (*IPStat, error) {
 	return s, err
 }
 
-func Read(d *sql.DB, id int) (*IPStat, error) {
+func Read(d *sqlx.DB, id int) (*IPStat, error) {
 	s := &IPStat{}
 	var err error
 	row := d.QueryRow("SELECT * FROM ipstats WHERE id=?", id)
@@ -102,7 +102,7 @@ func Read(d *sql.DB, id int) (*IPStat, error) {
 	return s, err
 }
 
-func ReadAll(d *sql.DB) ([]*IPStat, error) {
+func ReadAll(d *sqlx.DB) ([]*IPStat, error) {
 	ss := make([]*IPStat, 0)
 	rows, err := d.Query("SELECT * FROM ipstats")
 	if err == nil {
@@ -118,7 +118,7 @@ func ReadAll(d *sql.DB) ([]*IPStat, error) {
 	return ss, err
 }
 
-func Update(d *sql.DB, s *IPStat) error {
+func Update(d *sqlx.DB, s *IPStat) error {
 	_, err := d.Exec("UPDATE ipstats SET bandwidth=? latency=? sourceid=? WHERE id=?", s.Bandwidth, s.Latency, s.SourceID, s.ID)
 	return err
 }
