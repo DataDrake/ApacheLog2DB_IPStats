@@ -22,6 +22,7 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
+// SliceContains checks for a value in a slice
 func SliceContains(vs []string, v string) bool {
 	for _, curr := range vs {
 		if curr == v {
@@ -31,9 +32,9 @@ func SliceContains(vs []string, v string) bool {
 	return false
 }
 
-func get_tables(db *sqlx.DB) ([]string, error) {
+func getTables(db *sqlx.DB) ([]string, error) {
 	tables := make([]string, 0)
-	found, err := db.Query(core.GET_TABLES[global.DB_TYPE])
+	found, err := db.Query(core.GetTablesQueries[global.DB_TYPE])
 	if err != nil {
 		return nil, err
 	}
@@ -52,8 +53,9 @@ func get_tables(db *sqlx.DB) ([]string, error) {
 	return tables, err
 }
 
+// CreateMissing adds the ipstats table if it does not exist
 func CreateMissing(db *sqlx.DB) error {
-	tables, err := get_tables(db)
+	tables, err := getTables(db)
 
 	if !SliceContains(tables, "ipstats") {
 		err = CreateTable(db)

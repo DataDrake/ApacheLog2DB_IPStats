@@ -24,6 +24,7 @@ import (
 	"strings"
 )
 
+// FindClosest estimates the bandwidth and latency of an IP based on others in the closest matching subnet
 func FindClosest(IP string, avgs, avgs2 map[string]float64) (float64, float64) {
 	octets := strings.Split(IP, ".")
 	bw := avgs["all"]
@@ -38,6 +39,7 @@ func FindClosest(IP string, avgs, avgs2 map[string]float64) (float64, float64) {
 	return bw, lat
 }
 
+// FillBlanks fills in missing link characteristics for IPs
 func FillBlanks(db *sqlx.DB, avgs, avgs2 map[string]float64) error {
 	srcs, err := source.ReadAll(db)
 	if err != nil {
@@ -59,6 +61,7 @@ func FillBlanks(db *sqlx.DB, avgs, avgs2 map[string]float64) error {
 	return nil
 }
 
+// UpdateTotals adds a new IP stat into global totals
 func UpdateTotals(IP string, s *IPStat, avgs, avgs2, cts map[string]float64) {
 	octets := strings.Split(IP, ".")
 	avgs["all"] += s.Bandwidth
@@ -72,6 +75,7 @@ func UpdateTotals(IP string, s *IPStat, avgs, avgs2, cts map[string]float64) {
 	}
 }
 
+// GetAverages calculates the averages from the subnet totals
 func GetAverages(db *sqlx.DB) (map[string]float64, map[string]float64, error) {
 	stats, err := ReadAll(db)
 	if err != nil {
@@ -88,9 +92,9 @@ func GetAverages(db *sqlx.DB) (map[string]float64, map[string]float64, error) {
 		}
 		UpdateTotals(src.IP, s, avgs, avgs2, counts)
 	}
-	for s, _ := range counts {
-		avgs[s] /= counts[s]
-		avgs2[s] /= counts[s]
+	for s, count := range counts {
+		avgs[s] /= count
+		avgs2[s] /= count
 	}
 	avgs["all"] /= counts["all"]
 	avgs2["all"] /= counts["all"]
@@ -98,6 +102,7 @@ func GetAverages(db *sqlx.DB) (map[string]float64, map[string]float64, error) {
 	return avgs, avgs2, nil
 }
 
+// FillInBlanks calculates global averages and then fills in any blank IP stat entries with estimates
 func FillInBlanks(db *sqlx.DB) error {
 	avgs, avgs2, err := GetAverages(db)
 	if err != nil {

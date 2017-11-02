@@ -27,8 +27,10 @@ import (
 	"os"
 )
 
-var MAX_RETRIES = 3
+// MaxRetries in the number of times to try get the stats, given failure on an attempt
+const MaxRetries = 3
 
+// IPStat is a SQL type for the link characteristics of a given IP
 type IPStat struct {
 	ID        int
 	Bandwidth float64
@@ -36,13 +38,15 @@ type IPStat struct {
 	SourceID  int
 }
 
+// NewIPStat returns an initialized IPStat
 func NewIPStat(bw float64, lat float64, sourceid int) *IPStat {
 	return &IPStat{-1, bw, lat, sourceid}
 }
 
+// GetStats returns the IPStat record for a Source, if one exists
 func GetStats(s *source.Source) (*IPStat, error) {
 	stat := &IPStat{}
-	for i := 0; i < MAX_RETRIES; i++ {
+	for i := 0; i < MaxRetries; i++ {
 		samples, err := data.CollectDataPoints(s.IP, 100, 1500, 100)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err.Error())
@@ -60,6 +64,7 @@ func GetStats(s *source.Source) (*IPStat, error) {
 	return stat, errors.New("Failed to get stats for: " + s.IP)
 }
 
+// ReadOrCreate gets an existing IPStat if it exists, or creates a new one if it doesn't
 func ReadOrCreate(db *sqlx.DB, s *source.Source) (*IPStat, error) {
 	stat, err := ReadSource(db, s.ID)
 	if err != nil {
@@ -75,7 +80,8 @@ func ReadOrCreate(db *sqlx.DB, s *source.Source) (*IPStat, error) {
 	return stat, err
 }
 
-var CREATE_TABLE = map[string]string{
+// CreateTableQueries is a mapping of SQL dialect to Table CREATE query for IPStats
+var CreateTableQueries = map[string]string{
 	"mysql": `CREATE TABLE ipstats ( id INTEGER PRIMARY KEY AUTO_INCREMENT,
 	bandwidth DOUBLE, latency DOUBLE, sourceid INTEGER,
 	FOREIGN KEY(sourceid) REFERENCES sources(id) )`,
@@ -84,16 +90,19 @@ var CREATE_TABLE = map[string]string{
 	FOREIGN KEY(sourceid) REFERENCES sources(id) )`,
 }
 
+// CreateTable creates the IPStats table in a given DB
 func CreateTable(d *sqlx.DB) error {
-	_, err := d.Exec(CREATE_TABLE[global.DB_TYPE])
+	_, err := d.Exec(CreateTableQueries[global.DB_TYPE])
 	return err
 }
 
+// Insert creates a new entry for an IPStat
 func Insert(d *sqlx.DB, s *IPStat) error {
 	_, err := d.Exec("INSERT INTO ipstats VALUES( NULL , ? , ? , ? )", s.Bandwidth, s.Latency, s.SourceID)
 	return err
 }
 
+// ReadSource attempts to get an IPStat by sourceid if one exists
 func ReadSource(d *sqlx.DB, sourceid int) (*IPStat, error) {
 	s := &IPStat{}
 	var err error
@@ -106,6 +115,7 @@ func ReadSource(d *sqlx.DB, sourceid int) (*IPStat, error) {
 	return s, err
 }
 
+// Read gets an IPStat by its own ID
 func Read(d *sqlx.DB, id int) (*IPStat, error) {
 	s := &IPStat{}
 	var err error
@@ -118,6 +128,7 @@ func Read(d *sqlx.DB, id int) (*IPStat, error) {
 	return s, err
 }
 
+// ReadAll gets an array of all IPStats in the DB
 func ReadAll(d *sqlx.DB) ([]*IPStat, error) {
 	ss := make([]*IPStat, 0)
 	rows, err := d.Query("SELECT * FROM ipstats")
@@ -134,6 +145,7 @@ func ReadAll(d *sqlx.DB) ([]*IPStat, error) {
 	return ss, err
 }
 
+// Update modifies an existing IPStat
 func Update(d *sqlx.DB, s *IPStat) error {
 	_, err := d.Exec("UPDATE ipstats SET bandwidth=? latency=? sourceid=? WHERE id=?", s.Bandwidth, s.Latency, s.SourceID, s.ID)
 	return err

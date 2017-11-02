@@ -25,28 +25,36 @@ import (
 	"sync"
 )
 
-var MAX_WORKERS = 10
+// MaxWorkers indicates the maximum number of workers to break up work across
+const MaxWorkers = 10
 
+// UpdateStats creates workers and then hands them off tasks one by one
 func UpdateStats(db *sqlx.DB) error {
 	c := make(chan *source.Source)
 	wg := &sync.WaitGroup{}
 	ss, err := source.ReadAll(db)
-	for i := 0; i < MAX_WORKERS; i++ {
+	for i := 0; i < MaxWorkers; i++ {
+		wg.Add(1)
 		go GetStat(wg, db, c)
 	}
 	if err == nil {
 		for _, s := range ss {
-
 			c <- s
 		}
+		close(c)
 		wg.Wait()
 	}
 	return nil
 }
 
+// GetStat is a worker task that reads sources off of a channel and updates their stats one by one
 func GetStat(wg *sync.WaitGroup, db *sqlx.DB, c chan *source.Source) {
-	wg.Add(1)
-	for s := range c {
+	for {
+		s, more := <-c
+		if !more {
+			wg.Done()
+			break
+		}
 		_, err := ReadOrCreate(db, s)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err.Error())
@@ -55,6 +63,7 @@ func GetStat(wg *sync.WaitGroup, db *sqlx.DB, c chan *source.Source) {
 	wg.Done()
 }
 
+// GetAllStats will retrieve all stats in an exported format
 func GetAllStats(db *sqlx.DB) error {
 	return errors.New("Feature not yet supported")
 }
