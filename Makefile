@@ -10,6 +10,7 @@ PKGNAME  = ApacheLog2DB_IPStats
 SUBPKGS  = stat
 
 DEPS     = github.com/DataDrake/ApacheLog2DB \
+           github.com/DataDrake/cli-ng \
            github.com/DataDrake/ipstat \
            github.com/go-sql-driver/mysql \
            github.com/jmoiron/sqlx \

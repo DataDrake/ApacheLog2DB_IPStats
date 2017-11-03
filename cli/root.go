@@ -14,12 +14,28 @@
 // limitations under the License.
 //
 
-package main
+package cli
 
 import (
-	"github.com/DataDrake/ApacheLog2DB_IPStats/cli"
+	"github.com/DataDrake/cli-ng/cmd"
 )
 
-func main() {
-	cli.Root.Run()
+// GlobalFlags
+type GlobalFlags struct {}
+
+// Root is the main command for this application
+var Root *cmd.RootCMD
+
+func init() {
+	// Build Application
+	Root = &cmd.RootCMD{
+		Name:  "ApacheLog2DB_IPStats",
+		Short: "A supplemental tool for estimating link characteristics of ApacheLog2DB Sources",
+		Flags: &GlobalFlags{},
+	}
+	// Setup the Sub-Commands
+	Root.RegisterCMD(&cmd.Help)
+	Root.RegisterCMD(&Import)
+	Root.RegisterCMD(&Estimate)
+	Root.RegisterCMD(&Update)
 }
